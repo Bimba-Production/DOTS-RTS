@@ -3,13 +3,20 @@ using UnityEngine;
 
 namespace _Scripts.Authoring
 {
-    public class ZonbieAuthoring : MonoBehaviour
+    public class ZombieAuthoring : MonoBehaviour
     {
-        private class ZonbieAuthoringBaker : Baker<ZonbieAuthoring>
+        public class Baker : Baker<ZombieAuthoring>
         {
-            public override void Bake(ZonbieAuthoring authoring)
+            public override void Bake(ZombieAuthoring authoring)
             {
+                Entity entity = GetEntity(TransformUsageFlags.Dynamic);
+                AddComponent(entity, new Zombie());
             }
+        }
+        
+        public struct Zombie: IComponentData
+        {
+            
         }
     }
 }

@@ -2,8 +2,9 @@
 
 namespace _Scripts
 {
-    public class Fraction : MonoBehaviour
+    public enum Faction
     {
-        
+        Friendly = 0,
+        Zombie = 1,
     }
 }

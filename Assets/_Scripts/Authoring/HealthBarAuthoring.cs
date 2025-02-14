@@ -5,11 +5,26 @@ namespace _Scripts.Authoring
 {
     public class HealthBarAuthoring : MonoBehaviour
     {
-        private class HealthBarAuthoringBaker : Baker<HealthBarAuthoring>
+        public GameObject barVisualGameObject;
+        public GameObject healthGameObject;
+        
+        public class Baker : Baker<HealthBarAuthoring>
         {
             public override void Bake(HealthBarAuthoring authoring)
             {
+                Entity entity = GetEntity(TransformUsageFlags.Dynamic);
+                AddComponent(entity, new HealthBar
+                {
+                    barVisualEntity = GetEntity(authoring.barVisualGameObject, TransformUsageFlags.NonUniformScale),
+                    healthEntity = GetEntity(authoring.healthGameObject, TransformUsageFlags.Dynamic),
+                });
             }
         }
+    }
+
+    public struct HealthBar : IComponentData
+    {
+        public Entity barVisualEntity;
+        public Entity healthEntity;
     }
 }
