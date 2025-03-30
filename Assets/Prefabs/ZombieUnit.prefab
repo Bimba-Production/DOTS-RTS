@@ -39,6 +39,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 15238200009805987, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: unitType
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1581504635701627517, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
       propertyPath: m_Name
       value: ZombieUnit
@@ -55,17 +59,49 @@ PrefabInstance:
       propertyPath: range
       value: 19
       objectReference: {fileID: 0}
+    - target: {fileID: 3484691394728031537, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: nextAnimationType
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 3499870207053226792, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 85cd5279f313d294c8d4eb59ece3cb5b, type: 2}
+    - target: {fileID: 3902946079270329712, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: factionType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6445949541422004417, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 4300000, guid: b6815ab17cf31b645b33d7e67d00ce14, type: 2}
+    - target: {fileID: 6912472332531048733, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: idleAnimationType
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6912472332531048733, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: walkAnimationType
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6912472332531048733, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: meleeAttackAnimationType
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 8845725570574586564, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
       propertyPath: faction
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865063312882229470, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7177619
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865063312882229470, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.69628865
+      objectReference: {fileID: 0}
+    - target: {fileID: 8865063312882229470, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -88.26
       objectReference: {fileID: 0}
     - target: {fileID: 9134916659709678080, guid: 3b5a3449d686d6c4c9d6a08632aa1c05, type: 3}
       propertyPath: m_LocalPosition.x

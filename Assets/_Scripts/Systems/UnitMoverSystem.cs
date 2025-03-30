@@ -27,7 +27,8 @@ namespace _Scripts.Systems
     {
         public float deltaTime;
         
-        private void Execute(ref LocalTransform localTransform, in UnitMover unitMover, ref PhysicsVelocity physicsVelocity)
+        private void Execute(ref LocalTransform localTransform, ref UnitMover unitMover,
+            ref PhysicsVelocity physicsVelocity)
         {
             float3 moveDir = unitMover.targetPosition - localTransform.Position;
             
@@ -35,8 +36,11 @@ namespace _Scripts.Systems
             {
                 physicsVelocity.Linear = float3.zero;
                 physicsVelocity.Angular = float3.zero;
+                unitMover.isMoving = false;
                 return;
             }
+            
+            unitMover.isMoving = true;
             
             moveDir = math.normalize(moveDir);
 

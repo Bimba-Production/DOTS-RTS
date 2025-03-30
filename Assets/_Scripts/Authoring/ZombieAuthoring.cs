@@ -13,10 +13,9 @@ namespace _Scripts.Authoring
                 AddComponent(entity, new Zombie());
             }
         }
-        
-        public struct Zombie: IComponentData
-        {
+    }
+    public struct Zombie: IComponentData
+    {
             
-        }
     }
 }

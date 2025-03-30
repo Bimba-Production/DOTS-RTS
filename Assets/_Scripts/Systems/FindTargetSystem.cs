@@ -11,6 +11,7 @@ namespace _Scripts.Systems
 {
     public partial struct FindTargetSystem : ISystem
     {
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PhysicsWorldSingleton>();
@@ -47,7 +48,7 @@ namespace _Scripts.Systems
                 CollisionFilter collisionFilter = new CollisionFilter
                 {
                     BelongsTo = ~0u,
-                    CollidesWith = 1u << GameAssets.UNITS_LAYER,
+                    CollidesWith = 1u << GameAssets.UNITS_LAYER | 1u << GameAssets.BUILDINGS_LAYER,
                     GroupIndex = 0
                 };
 
@@ -66,13 +67,13 @@ namespace _Scripts.Systems
                 {
                     foreach (DistanceHit distanceHit in distanceHits)
                     {
-                        if (!SystemAPI.Exists(distanceHit.Entity) || !SystemAPI.HasComponent<Unit>(distanceHit.Entity))
+                        if (!SystemAPI.Exists(distanceHit.Entity) || !SystemAPI.HasComponent<Faction>(distanceHit.Entity))
                         {
                             continue;
                         }
                         
-                        Unit targetUnit = SystemAPI.GetComponent<Unit>(distanceHit.Entity);
-                        if (targetUnit.faction == findTarget.ValueRO.targetFaction)
+                        Faction targetFaction = SystemAPI.GetComponent<Faction>(distanceHit.Entity);
+                        if (targetFaction.factionType == findTarget.ValueRO.targetFactionType)
                         {
                             if (closestTargetEntity == Entity.Null)
                             {

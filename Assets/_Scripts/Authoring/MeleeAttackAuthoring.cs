@@ -33,5 +33,6 @@ namespace _Scripts.Authoring
         public float attackDistanceSq;
         public int damageAmount;
         public float colliderSize;
+        public bool onAttacked;
     }
 }

@@ -3,12 +3,12 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace _Scripts.Systems
 {
     public partial struct ShootAttackSystem : ISystem
     {
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EntitiesReferences>();
@@ -17,10 +17,17 @@ namespace _Scripts.Systems
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            foreach (RefRW<ShootAttack> shootAttack 
+                     in SystemAPI.Query<RefRW<ShootAttack>>())
+            {
+                shootAttack.ValueRW.timer -= SystemAPI.Time.DeltaTime;
+                if (shootAttack.ValueRO.timer < 0) shootAttack.ValueRW.timer = 0f;
+            }
+            
             foreach ((RefRW<LocalTransform> localTransform, RefRW<ShootAttack> shootAttack,
-                         RefRO<Target> target, RefRW<UnitMover> unitMover, RefRO<Unit> unit, Entity entity) 
+                         RefRO<Target> target, RefRW<UnitMover> unitMover, RefRO<Faction> faction, Entity entity) 
                      in SystemAPI.Query<RefRW<LocalTransform>,RefRW<ShootAttack>,
-                         RefRO<Target>, RefRW<UnitMover>, RefRO<Unit>>().WithDisabled<MoveOverride>().WithEntityAccess())
+                         RefRO<Target>, RefRW<UnitMover>, RefRO<Faction>>().WithDisabled<MoveOverride>().WithEntityAccess())
             {
                 if (target.ValueRO.targetEntity == Entity.Null)
                 {
@@ -44,8 +51,30 @@ namespace _Scripts.Systems
                 
                 quaternion targetRotation = quaternion.LookRotation(aimDirection, math.up());
                 localTransform.ValueRW.Rotation = math.slerp(localTransform.ValueRO.Rotation, targetRotation, SystemAPI.Time.DeltaTime * unitMover.ValueRO.rotationSpeed);
+            }
+            
+            foreach ((RefRW<LocalTransform> localTransform, RefRW<ShootAttack> shootAttack,
+                         RefRO<Target> target, RefRO<Faction> faction, Entity entity) 
+                     in SystemAPI.Query<RefRW<LocalTransform>,RefRW<ShootAttack>,
+                         RefRO<Target>, RefRO<Faction>>().WithEntityAccess())
+            {
+                if (target.ValueRO.targetEntity == Entity.Null)
+                {
+                    continue;
+                }
                 
-                shootAttack.ValueRW.timer -= SystemAPI.Time.DeltaTime;
+                LocalTransform targetLocalTransform = SystemAPI.GetComponent<LocalTransform>(target.ValueRO.targetEntity);
+
+                if (math.distance(localTransform.ValueRO.Position, targetLocalTransform.Position) >
+                    shootAttack.ValueRO.attackDistance)
+                {
+                    continue;
+                }
+
+                if (SystemAPI.HasComponent<MoveOverride>(entity) && SystemAPI.IsComponentEnabled<MoveOverride>(entity))
+                {
+                    continue;
+                }
                 
                 if (shootAttack.ValueRO.timer > 0)
                 {
@@ -53,13 +82,6 @@ namespace _Scripts.Systems
                 }
                 
                 shootAttack.ValueRW.timer = shootAttack.ValueRO.timerMax;
-
-                RefRW<TargetOverride> enemyTargetOverride = SystemAPI.GetComponentRW<TargetOverride>(target.ValueRO.targetEntity);
-                Unit enemyUnit = SystemAPI.GetComponent<Unit>(target.ValueRO.targetEntity);
-                if (enemyTargetOverride.ValueRO.targetEntity == Entity.Null && enemyUnit.faction != unit.ValueRO.faction)
-                {
-                    enemyTargetOverride.ValueRW.targetEntity = entity;
-                }
                 
                 float3 bulletSpawnWorldPosition = localTransform.ValueRO.TransformPoint(shootAttack.ValueRO.bulletSpawnLocalPosition);
                 
@@ -68,6 +90,17 @@ namespace _Scripts.Systems
                 targetHealth.ValueRW.onHealthChanged = true;
                 shootAttack.ValueRW.onShoot.isTriggered = true;
                 shootAttack.ValueRW.onShoot.shootFromPosition = bulletSpawnWorldPosition;
+
+                if (SystemAPI.HasComponent<TargetOverride>(target.ValueRO.targetEntity))
+                {
+                    RefRW<TargetOverride> enemyTargetOverride = SystemAPI.GetComponentRW<TargetOverride>(target.ValueRO.targetEntity);
+                    Faction enemyFaction = SystemAPI.GetComponent<Faction>(target.ValueRO.targetEntity);
+                
+                    if (enemyTargetOverride.ValueRO.targetEntity == Entity.Null && enemyFaction.factionType != faction.ValueRO.factionType)
+                    {
+                        enemyTargetOverride.ValueRW.targetEntity = entity;
+                    }
+                }
             }
         }
     }

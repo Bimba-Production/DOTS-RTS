@@ -5,11 +5,13 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
+using RaycastHit = Unity.Physics.RaycastHit;
 
 namespace _Scripts.Systems
 {
     public partial struct MeleeAttackSystem : ISystem
     {
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PhysicsWorldSingleton>();
@@ -84,6 +86,8 @@ namespace _Scripts.Systems
                     RefRW<Health> targetHealth = SystemAPI.GetComponentRW<Health>(target.ValueRO.targetEntity);
                     targetHealth.ValueRW.healthAmount -= meleeAttack.ValueRO.damageAmount;
                     targetHealth.ValueRW.onHealthChanged = true;
+                    
+                    meleeAttack.ValueRW.onAttacked = true;
                 }
             }
         }

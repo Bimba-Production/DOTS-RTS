@@ -6,6 +6,7 @@ namespace _Scripts.Systems
 {
     public partial struct ShootLightDestroySystem : ISystem
     {
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();

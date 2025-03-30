@@ -11,6 +11,8 @@ namespace _Scripts.Authoring
         public float spawnRange;
         public float randomWalkingDistanceMin;
         public float randomWalkingDistanceMax;
+        public int nearbyZombiesAmountMax;
+        public float nearbyZombieAmountDistance;
         
         public class Baker : Baker<ZombieSpawnerAuthoring>
         {
@@ -23,6 +25,8 @@ namespace _Scripts.Authoring
                     spawnRange = authoring.spawnRange,
                     randomWalkingDistanceMin = authoring.randomWalkingDistanceMin,
                     randomWalkingDistanceMax = authoring.randomWalkingDistanceMax,
+                    nearbyZombiesAmountMax = authoring.nearbyZombiesAmountMax,
+                    nearbyZombieAmountDistance = authoring.nearbyZombieAmountDistance,
                 });
                 AddComponent(entity, new ZombieSpawnerRandom
                 {
@@ -39,6 +43,8 @@ namespace _Scripts.Authoring
         public float spawnRange;
         public float randomWalkingDistanceMin;
         public float randomWalkingDistanceMax;
+        public int nearbyZombiesAmountMax;
+        public float nearbyZombieAmountDistance;
     }
 
     public struct ZombieSpawnerRandom : IComponentData

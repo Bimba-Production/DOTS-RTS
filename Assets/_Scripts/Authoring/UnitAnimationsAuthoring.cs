@@ -7,6 +7,10 @@ namespace _Scripts.Authoring
     {
         public AnimationType idleAnimationType;
         public AnimationType walkAnimationType;
+        public AnimationType shootAnimationType;
+        public AnimationType aimAnimationType;
+        public AnimationType meleeAttackAnimationType;
+        
         public class Baker : Baker<UnitAnimationsAuthoring>
         {
             public override void Bake(UnitAnimationsAuthoring authoring)
@@ -16,6 +20,9 @@ namespace _Scripts.Authoring
                 {
                     idleAnimationType = authoring.idleAnimationType,
                     walkAnimationType = authoring.walkAnimationType,
+                    shootAnimationType = authoring.shootAnimationType,
+                    aimAnimationType = authoring.aimAnimationType,
+                    meleeAttackAnimationType = authoring.meleeAttackAnimationType,
                 });
             }
         }
@@ -25,5 +32,8 @@ namespace _Scripts.Authoring
     {
         public AnimationType idleAnimationType;
         public AnimationType walkAnimationType;
+        public AnimationType shootAnimationType;
+        public AnimationType aimAnimationType;
+        public AnimationType meleeAttackAnimationType;
     }
 }

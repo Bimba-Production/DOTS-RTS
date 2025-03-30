@@ -11,12 +11,12 @@ namespace _Scripts.Authoring
             {
                 Entity entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(entity, new Friendly());
+                AddBuffer<CommandBuffer>(entity);
             }
         }
-        
-        public struct Friendly: IComponentData
-        {
+    }
+    public struct Friendly: IComponentData
+    {
             
-        }
     }
 }

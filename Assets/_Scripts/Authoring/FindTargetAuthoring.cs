@@ -1,12 +1,13 @@
 ﻿using Unity.Entities;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace _Scripts.Authoring
 {
     public class FindTargetAuthoring : MonoBehaviour
     {
         public float range;
-        public Faction targetFaction;
+        public FactionType targetFactionType;
         public float timerMax;
         
         public class Baker : Baker<FindTargetAuthoring>
@@ -17,7 +18,7 @@ namespace _Scripts.Authoring
                 AddComponent(entity, new FindTarget
                 {
                     range = authoring.range,
-                    targetFaction = authoring.targetFaction,
+                    targetFactionType = authoring.targetFactionType,
                     timerMax = authoring.timerMax,
                 });
             }
@@ -27,7 +28,7 @@ namespace _Scripts.Authoring
     public struct FindTarget : IComponentData
     {
         public float range;
-        public Faction targetFaction;
+        public FactionType targetFactionType;
         public float timer;
         public float timerMax;
     }

@@ -1,53 +1,37 @@
-﻿using _Scripts.Authoring;
+﻿using System;
+using System.Collections.Generic;
+using _Scripts.Authoring;
 using _Scripts.MonoBehaviours;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace _Scripts.UI
 {
-    public class BuildingBarracksUI : MonoBehaviour
+    public class SelectionUI : MonoBehaviour
     {
-        [SerializeField] private Button _soldierButton;
-        [SerializeField] private Button _scoutButton;
-        [SerializeField] private Image _progressBar;
-        [SerializeField] private RectTransform _unitQueueContainer;
+        private Color HEALTH_BROWN = ColorUtility.TryParseHtmlString("#FF5A00", out var color) ? color : Color.gray;
+        private Color HEALTH_GREEN = ColorUtility.TryParseHtmlString("#25FF00", out var color) ? color : Color.green;
+        private Color HEALTH_RED = ColorUtility.TryParseHtmlString("#FF0014", out var color) ? color : Color.red;
+        private Color HEALTH_YELLOW = ColorUtility.TryParseHtmlString("#FFF200", out var color) ? color : Color.yellow;
+        
+        [SerializeField] private RectTransform _selectedUnitsContainer;
         [SerializeField] private RectTransform _unitQueueTemplate;
         
-        private Entity _entity;
         private EntityManager _entityManager;
-        private NativeArray<Entity> _barracks;
+        private NativeArray<Entity> _selectedUnits;
+        private List<Image> _selectedUnitsImages = new List<Image>();
+
+        public bool onHealthChanged = false;
+        public bool onUnitDead = false;
+        
+        public static SelectionUI Instance { get; private set; }
+
         private void Awake()
         {
-            _soldierButton.onClick.AddListener(BuildingBarracksUI_OnSoldierButtonClicked);
-            _scoutButton.onClick.AddListener(BuildingBarracksUI_OnScoutButtonClicked);
-            
+            Instance = this;
             _unitQueueTemplate.gameObject.SetActive(false);
-        }
-
-        private void BuildingBarracksUI_OnSoldierButtonClicked()
-        {
-            _entityManager.SetComponentData(_barracks[0], new BuildingBarracksUnitEnqueue
-            {
-                unitType = UnitType.Soldier,
-            });
-            
-            _entityManager.SetComponentEnabled<BuildingBarracksUnitEnqueue>(_barracks[0], true);
-
-            RotateLeft(_barracks);
-        }
-        private void BuildingBarracksUI_OnScoutButtonClicked()
-        {
-            _entityManager.SetComponentData(_barracks[0], new BuildingBarracksUnitEnqueue
-            {
-                unitType = UnitType.Scout,
-            });
-            
-            _entityManager.SetComponentEnabled<BuildingBarracksUnitEnqueue>(_barracks[0], true);
-            
-            RotateLeft(_barracks);
         }
         
         private void Start()
@@ -55,84 +39,55 @@ namespace _Scripts.UI
             _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
             UnitSelectionManager.Instance.OnSelectionEntitiesChanged += UnitSelectionManager_OnSelectionEntitiesChanged;
-            DOTSEventsManager.Instance.OnBarracksUnitQueueChanged += DOTSEventsManager_OnBarracksUnitQueueChanged;
             
             Hide();
         }
 
-        private void DOTSEventsManager_OnBarracksUnitQueueChanged(object sender, System.EventArgs e)
-        {
-            Entity entity = (Entity)sender;
-            if (entity == _entity)
-            {
-                UpdateUnitQueueVisual();
-            }
-        }
-        
         private void Update()
-        {
-            UpdateProgressBarVisual();
-
-            if (_entity != Entity.Null)
+        {    
+            if (onUnitDead)
             {
-                if (Input.GetKeyDown(KeyCode.A))
-                {
-                    BuildingBarracksUI_OnSoldierButtonClicked();
-                }
+                EntityQuery entityQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Selected, Unit, UnitTypeHolder, Health>().Build(_entityManager);
             
-                if (Input.GetKeyDown(KeyCode.S))
-                {
-                    BuildingBarracksUI_OnScoutButtonClicked();
-                }
+                _selectedUnits = entityQuery.ToEntityArray(Allocator.Persistent);
+                
+                UpdateUnitQueueVisual();
+                onHealthChanged = false;
+                onUnitDead = false;
+            }
+            else if (onHealthChanged)
+            {
+                UpdateUnitsColor();
+                onHealthChanged = false;
             }
         }
-        
+
         private void UnitSelectionManager_OnSelectionEntitiesChanged(object sender, System.EventArgs e)
         {
-            EntityQuery entityQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Selected, BuildingBarracks>().Build(_entityManager);
+            EntityQuery entityQuery = new EntityQueryBuilder(Allocator.Temp).WithAll<Selected, Unit, UnitTypeHolder, Health>().Build(_entityManager);
             
             NativeArray<Entity> entityArray = entityQuery.ToEntityArray(Allocator.Persistent);
 
             if (entityArray.Length > 0)
             {
-                _entity = entityArray[0];
-                _barracks = entityArray;
+                _selectedUnits = entityArray;
                 
                 Show();
-                UpdateProgressBarVisual();
                 UpdateUnitQueueVisual();
             }
             else
             {
-                _entity = Entity.Null;
-                ClearEntities(_barracks);
-                
+                ClearEntities(_selectedUnits);
+                _selectedUnitsImages.Clear();
                 Hide();
-            }
-        }
-
-        private void UpdateProgressBarVisual()
-        {
-            if (_entity == Entity.Null)
-            {
-                _progressBar.fillAmount = 0f;
-                return;
-            }
-            
-            BuildingBarracks buildingBarracks = _entityManager.GetComponentData<BuildingBarracks>(_entity);
-            if (buildingBarracks.activeUnitType == UnitType.None)
-            {
-                _progressBar.fillAmount = 0f;
-            }
-            else
-            {
-                _progressBar.fillAmount = buildingBarracks.progress / buildingBarracks.progressMax;
             }
         }
 
         private void UpdateUnitQueueVisual()
         {
-            foreach (Transform child in _unitQueueContainer)
+            _selectedUnitsImages.Clear();
+            
+            foreach (Transform child in _selectedUnitsContainer)
             {
                 if (child == _unitQueueTemplate)
                 {
@@ -142,31 +97,18 @@ namespace _Scripts.UI
                 Destroy(child.gameObject);
             }
             
-            DynamicBuffer<SpawnUnitTypeBuffer> spawnUnitTypeBuffers =
-                _entityManager.GetBuffer<SpawnUnitTypeBuffer>(_entity, true);
-
-            foreach (SpawnUnitTypeBuffer spawnUnitTypeBuffer in spawnUnitTypeBuffers)
+            foreach (Entity entity in _selectedUnits)
             {
-                RectTransform unitQueueRectTransform = Instantiate(_unitQueueTemplate, _unitQueueContainer);
+                UnitTypeHolder unitType = _entityManager.GetComponentData<UnitTypeHolder>(entity);
+                RectTransform unitQueueRectTransform = Instantiate(_unitQueueTemplate, _selectedUnitsContainer);
                 unitQueueRectTransform.gameObject.SetActive(true);
 
-                UnitTypeSO unitTypeSO = GameAssets.Instance.unitTypeListSO.GetUnitTypeSO(spawnUnitTypeBuffer.unitType);
-                unitQueueRectTransform.GetComponent<Image>().sprite = unitTypeSO.sprite;
+                UnitTypeSO unitTypeSO = GameAssets.Instance.unitTypeListSO.GetUnitTypeSO(unitType.unitType);
+                Image image = unitQueueRectTransform.GetComponent<Image>();
+                _selectedUnitsImages.Add(image);
+                image.sprite = unitTypeSO.sprite;
+                image.color = GetColor(entity);
             }
-        }
-        
-        private static void RotateLeft<T>(NativeArray<T> array) where T : struct
-        {
-            if (array.Length < 2) return;
-
-            T first = array[0];
-
-            for (int i = 0; i < array.Length - 1; i++)
-            {
-                array[i] = array[i + 1];
-            }
-
-            array[^1] = first;
         }
         
         private static void ClearEntities(NativeArray<Entity> array)
@@ -185,6 +127,41 @@ namespace _Scripts.UI
         private void Hide()
         {
             gameObject.SetActive(false);
+        }
+
+        private Color GetColor(Entity entity)
+        {
+            Health health = _entityManager.GetComponentData<Health>(entity);
+            
+            if (health.healthAmount < 30f)
+            {
+                return HEALTH_RED;
+            }
+            else if (health.healthAmount < 50f)
+            {
+                return HEALTH_BROWN;
+            }
+            else if (health.healthAmount < 70f)
+            {
+               return HEALTH_YELLOW;
+            }
+            else
+            {
+                return HEALTH_GREEN;
+            }
+        }
+
+        private void UpdateUnitsColor()
+        {
+            if (_selectedUnits.Length > 0)
+            {
+                int index = 0;
+                foreach (Entity entity in _selectedUnits)
+                {
+                    _selectedUnitsImages[index].color = GetColor(entity);
+                    index++;
+                }
+            }
         }
     }
 }

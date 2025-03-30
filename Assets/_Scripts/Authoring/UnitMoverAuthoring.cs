@@ -28,5 +28,6 @@ namespace _Scripts.Authoring
         public float moveSpeed;
         public float rotationSpeed;
         public float3 targetPosition;
+        public bool isMoving;
     }
 }

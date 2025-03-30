@@ -5,11 +5,23 @@ namespace _Scripts.Authoring
 {
     public class UnitTypeHolderAuthoring : MonoBehaviour
     {
-        private class UnitTypeHolderAuthoringBaker : Baker<UnitTypeHolderAuthoring>
+        public UnitType unitType;
+        
+        public class Baker : Baker<UnitTypeHolderAuthoring>
         {
             public override void Bake(UnitTypeHolderAuthoring authoring)
             {
+                Entity entity = GetEntity(TransformUsageFlags.Dynamic);
+                AddComponent(entity, new UnitTypeHolder
+                {
+                    unitType = authoring.unitType,
+                });
             }
         }
+    }
+
+    public struct UnitTypeHolder : IComponentData
+    {
+        public UnitType unitType;
     }
 }

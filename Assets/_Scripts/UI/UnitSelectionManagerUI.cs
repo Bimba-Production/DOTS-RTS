@@ -1,6 +1,5 @@
 ﻿using _Scripts.MonoBehaviours;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace _Scripts.UI
 {

@@ -8,6 +8,7 @@ namespace _Scripts.Systems
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     public partial struct ShootLightSpawnerSystem : ISystem
     {
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<EntitiesReferences>();
