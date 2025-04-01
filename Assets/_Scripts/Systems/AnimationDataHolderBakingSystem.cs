@@ -3,7 +3,6 @@ using _Scripts.Authoring;
 using Unity.Collections;
 using Unity.Rendering;
 using Unity.Entities;
-using Unity.Burst;
 
 namespace _Scripts.Systems
 {

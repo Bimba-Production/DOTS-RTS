@@ -1,44 +1,33 @@
 ﻿using _Scripts.Authoring;
 using Unity.Burst;
 using Unity.Entities;
+using UnityEngine;
 
 namespace _Scripts.Systems
 {
+    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     public partial struct CommandDistributionSystem : ISystem
     {
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            foreach ((RefRW<UnitMover> unitMover, RefRO<Target> target, RefRO<Friendly> friendly, Entity entity) 
-                     in SystemAPI.Query<RefRW<UnitMover>, RefRO<Target>, RefRO<Friendly>>().WithPresent<MoveOverride>().WithEntityAccess())
+            foreach ((RefRW<UnitMover> unitMover, RefRO<Target> target, RefRO<Friendly> friendly, DynamicBuffer<CommandBuffer> commandBuffer, Entity entity) 
+                     in SystemAPI.Query<RefRW<UnitMover>, RefRO<Target>, RefRO<Friendly>, DynamicBuffer<CommandBuffer>>().WithPresent<MoveOverride>().WithEntityAccess())
             {
-                DynamicBuffer<CommandBuffer> commandBuffer = SystemAPI.GetBuffer<CommandBuffer>(entity);
-                
-                if (commandBuffer.IsEmpty)
-                {
-                    return;
-                }
-
-                if (unitMover.ValueRO.isMoving)
-                {
-                    return;
-                }
-
-                if (target.ValueRO.targetEntity != Entity.Null)
-                {
-                    return;
-                }
+                if (commandBuffer.IsEmpty) continue;
+                if (unitMover.ValueRO.isMoving) continue;
+                if (target.ValueRO.targetEntity != Entity.Null) continue;
 
                 CommandBuffer command = commandBuffer[0];
 
                 switch (command.value)
                 {
                     case CommandType.Reach:
-                        // RefRW<MoveOverride> moveOverride = SystemAPI.GetComponentRW<MoveOverride>(entity);
-                        // moveOverride.ValueRW.targetPosition = command.point;
-                        // SystemAPI.SetComponentEnabled<MoveOverride>(entity, true);
-                        
+                        RefRW<MoveOverride> moveOverride = SystemAPI.GetComponentRW<MoveOverride>(entity);
+                        moveOverride.ValueRW.targetPosition = command.point;
+                        SystemAPI.SetComponentEnabled<MoveOverride>(entity, true);
                         unitMover.ValueRW.targetPosition = command.point;
+                        
                         break;
                     case CommandType.Attack:
                         unitMover.ValueRW.targetPosition = command.point;

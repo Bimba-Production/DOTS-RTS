@@ -452,7 +452,7 @@ namespace _Scripts.MonoBehaviours
                     if (Input.GetKey(KeyCode.LeftShift))
                     {
                         for (int i = 0; i < unitMoverArray.Length; i++) {
-                            AddToMovePointsBuffer(entityManager, entityArray[i], movePositionArray[i]);
+                            AddToMovePointsBuffer(entityManager, entityArray[i], movePositionArray[i], CommandType.Attack);
                             
                             entityManager.SetComponentEnabled<MoveOverride>(entityArray[i], false);
                             
@@ -503,7 +503,7 @@ namespace _Scripts.MonoBehaviours
                     if (Input.GetKey(KeyCode.LeftShift))
                     {
                         for (int i = 0; i < unitMoverArray.Length; i++) {
-                            AddToMovePointsBuffer(entityManager, entityArray[i], movePositionArray[i]);
+                            AddToMovePointsBuffer(entityManager, entityArray[i], movePositionArray[i], CommandType.Reach);
 
                             entityManager.SetComponentEnabled<MoveOverride>(entityArray[i], false);
                             
@@ -616,7 +616,7 @@ namespace _Scripts.MonoBehaviours
             OnTargetPositionsBufferCleared?.Invoke(this, EventArgs.Empty);
         }
 
-        private void AddToMovePointsBuffer(EntityManager entityManager, Entity entity, float3 point)
+        private void AddToMovePointsBuffer(EntityManager entityManager, Entity entity, float3 point, CommandType command)
         {
             DynamicBuffer<CommandBuffer> commandBuffer = entityManager.GetBuffer<CommandBuffer>(entity);
             
@@ -625,7 +625,7 @@ namespace _Scripts.MonoBehaviours
                 point = point,
                 value = CommandType.Reach,
             });
-                            
+            
             OnTargetPositionsBufferChanged?.Invoke(this, EventArgs.Empty);
         }
         
